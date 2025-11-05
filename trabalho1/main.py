@@ -8,8 +8,8 @@ if __name__ == "__main__":
     catalogo = CatalogoService(loja)
     transacao = TransacaoService(loja)
 
-    livro1 = Livro(id="1", titulo="Dom Casmurro", preco=30, estado="usado", autor="Machado", isbn="123", paginas=200)
-    livro2 = Livro(id="2", titulo="Memórias Póstumas", preco=28, estado="usado", autor="Machado", isbn="456", paginas=250)
+    livro1 = Livro(id="1", titulo="Dom Casmurro", preco=30, estado="usado", autor="Machado", isbn="123", paginas=200, genero="Romance")
+    livro2 = Livro(id="2", titulo="Memórias Póstumas", preco=28, estado="usado", autor="Machado", isbn="456", paginas=250, genero="Romance")
 
     catalogo.cadastrar(livro1)
     catalogo.cadastrar(livro2)

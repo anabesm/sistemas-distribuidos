@@ -8,7 +8,7 @@ class LivroOutputStream(io.BufferedIOBase):
         array_objs: Iterable[Any],
         n_objetos: int,
         destino: Any,
-        campos: Optional[Sequence[str]] = None,
+        campos: Optional[Sequence[str]] = ["id", "titulo", "preco"],
         close_destino: bool = False,
     ) -> None:
         super().__init__()
@@ -19,27 +19,17 @@ class LivroOutputStream(io.BufferedIOBase):
         if self._campos is not None and len(self._campos) < 3:
             raise ValueError("Informe pelo menos 3 campos ou deixe None para seleção automática.")
 
+    # helper para converter texto em bytes UTF-8
     @staticmethod
     def _to_bytes(texto: str) -> bytes:
         return texto.encode("utf-8")
 
-    @staticmethod
-    def _pick_3_campos(obj: Any) -> List[str]:
-        preferencia = ["id", "titulo", "preco", "estado", "autor"]
-        disponiveis = [c for c in preferencia if hasattr(obj, c)]
-
-        if len(disponiveis) < 3:
-            extras = [k for k in obj.__dict__.keys() if k not in disponiveis]
-            disponiveis.extend(extras)
-        return disponiveis[:3]
-
+    # codifica um objeto em bytes conforme o formato especificado
     def _encode_obj(self, obj: Any) -> bytes:
-        campos = self._campos or self._pick_3_campos(obj)
-
         payload = bytearray()
-        payload.append(len(campos) & 0xFF)
+        payload.append(len(self._campos) & 0xFF)
 
-        for nome in campos:
+        for nome in self._campos:
             valor = getattr(obj, nome)
             valor_str = str(valor)
             nome_b = self._to_bytes(nome)
@@ -54,13 +44,16 @@ class LivroOutputStream(io.BufferedIOBase):
 
         return bytes(payload)
 
+    # escreve bytes no destino
     def write(self, b: bytes) -> int:
         return self._dest.write(b)
 
+    # garante que todos os dados foram escritos
     def flush(self) -> None:
         if hasattr(self._dest, "flush"):
             self._dest.flush()
 
+    # fecha o stream e o destino se necessário
     def close(self) -> None:
         try:
             self.flush()
@@ -69,6 +62,7 @@ class LivroOutputStream(io.BufferedIOBase):
                 self._dest.close()
         return super().close()
 
+    # envia todos os objetos no stream
     def send_all(self) -> None:
         self.write(struct.pack(">I", len(self._objetos)))
         for obj in self._objetos:

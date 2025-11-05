@@ -1,5 +1,5 @@
-from helpers.objetos import _objetos_demo
-from livro_output_stream import LivroOutputStream
+from testes.objetos import _objetos_demo
+from streams.livro_output_stream import LivroOutputStream
 import sys
 
 def teste_stdout():

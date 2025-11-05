@@ -7,6 +7,7 @@ class Livro(Produto, Trocavel):
     autor: str
     isbn: str
     paginas: int
+    genero: str
 
     # livros podem ser trocados com livros ou eBooks
     def pode_trocar_por(self, outro: "Produto") -> bool:
