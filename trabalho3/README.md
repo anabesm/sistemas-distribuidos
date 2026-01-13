@@ -1,4 +1,4 @@
-# Trabalho 3 — Loja de Mídias (WS/API + Protocolo Request/Response)
+# Trabalho 3 — Sebo (WS/API + Protocolo Request/Response)
 
 Este projeto reimplementa o serviço remoto do Trabalho 2 usando **comunicação cliente-servidor via HTTP (WS/API)**, organizado como **protocolo de requisição/resposta**, **sem usar sockets manuais e sem RMI**.
 
