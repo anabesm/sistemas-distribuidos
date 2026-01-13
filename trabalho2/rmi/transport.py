@@ -1,6 +1,6 @@
 from __future__ import annotations
-from .protocol import from_bytes, to_bytes, unpack_args, pack_args, RemoteObjectRef
-from .marshalling import marshal, unmarshal
+from .protocol import unpack_args, pack_args, RemoteObjectRef, make_request
+from .marshalling import unmarshal
 from typing import Any, Dict
 from xmlrpc.server import SimpleXMLRPCServer
 from xmlrpc.client import ServerProxy
@@ -8,7 +8,6 @@ from xmlrpc.client import ServerProxy
 # cliente RMI
 class Requestor:
     def doOperation(self, o: RemoteObjectRef, methodId: str, arguments: Any) -> Any:
-        from .protocol import make_request
         req = make_request(o, methodId, arguments)
         proxy = ServerProxy(f"http://{o.host}:{o.port}", allow_none=True)
         reply_dict = proxy.invoke(req)
