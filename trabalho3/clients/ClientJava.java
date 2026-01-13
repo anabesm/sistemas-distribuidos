@@ -3,11 +3,10 @@ import java.net.http.*;
 import java.nio.charset.StandardCharsets;
 
 public class ClientJava {
-    static final String BASE = "http://127.0.0.1:8000/invoke";
+
     static final HttpClient client = HttpClient.newHttpClient();
 
-    static String invokeJson(String objectRef, String methodId, String argsJson) throws Exception {
-        // argsJson: ex "[]" ou "[\"E1\",\"E2\"]"
+    static String invokeJson(String invokeUrl, String objectRef, String methodId, String argsJson) throws Exception {
         String body = "{"
                 + "\"requestId\":1,"
                 + "\"objectReference\":\"" + objectRef + "\","
@@ -16,31 +15,26 @@ public class ClientJava {
                 + "}";
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE))
+                .uri(URI.create(invokeUrl))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                 .build();
 
         HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-
-        if (resp.statusCode() >= 400) {
-            throw new RuntimeException("HTTP " + resp.statusCode() + " -> " + resp.body());
-        }
         return resp.body();
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("== LISTAR ==");
-        System.out.println(invokeJson("CatalogoService", "listar", "[]"));
+        String invokeUrl = (args.length >= 1) ? args[0] : "http://127.0.0.1:8000/invoke";
+        System.out.println("Invoke URL: " + invokeUrl);
 
-        System.out.println("\n== TROCA VÁLIDA E1 <-> E2 ==");
-        System.out.println(invokeJson("TransacaoService", "trocar", "[\"E1\",\"E2\"]"));
+        System.out.println("\n== LISTAR ==");
+        System.out.println(invokeJson(invokeUrl, "CatalogoService", "listar", "[]"));
 
-        System.out.println("\n== TROCA INVÁLIDA E1 <-> L1 (ERRO ESPERADO) ==");
-        try {
-            System.out.println(invokeJson("TransacaoService", "trocar", "[\"E1\",\"L1\"]"));
-        } catch (Exception e) {
-            System.out.println("Erro esperado: " + e.getMessage());
-        }
+        System.out.println("\n== TROCA VALIDA E1 <-> E2 ==");
+        System.out.println(invokeJson(invokeUrl, "TransacaoService", "trocar", "[\"E1\",\"E2\"]"));
+
+        System.out.println("\n== TROCA INVALIDA E1 <-> L1 (ERRO ESPERADO) ==");
+        System.out.println(invokeJson(invokeUrl, "TransacaoService", "trocar", "[\"E1\",\"L1\"]"));
     }
 }
