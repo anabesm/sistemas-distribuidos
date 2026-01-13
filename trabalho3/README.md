@@ -21,6 +21,17 @@ javac -encoding UTF-8 clients/ClientJava.java
 java -cp clients ClientJava
 ```
 
+Para rodar em outra máquina:
+
+```
+$env:API_BASE="http://IP_DO_SERVIDOR:8000"
+node clients\client.js
+
+java -cp clients ClientJava http://IP_DO_SERVIDOR:8000/invoke
+```
+
+---
+
 ## Estrutura
 
 - **Servidor (FastAPI)**
