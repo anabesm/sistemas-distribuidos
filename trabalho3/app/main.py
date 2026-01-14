@@ -167,6 +167,50 @@ def realizar_troca(dados: TrocaRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.put("/produtos/{produto_id}")
+def atualizar_produto(produto_id: str, item: ProdutoCreate):
+    """
+    Atualiza (substitui) um produto existente.
+    """
+    if produto_id not in loja.estoque:
+        raise HTTPException(status_code=404, detail="Produto não encontrado.")
+
+    if item.id != produto_id:
+        raise HTTPException(status_code=400, detail="O ID da URL difere do ID do corpo da requisição.")
+
+    try:
+        tipo = item.tipo_produto.lower()
+        dados = item.extras
+        
+        common_args = {
+            "id": produto_id,
+            "titulo": item.titulo,
+            "preco": item.preco,
+            "estado": item.estado
+        }
+        
+        novo_produto = None
+
+        if tipo == "livro":
+            novo_produto = Livro(**common_args, **dados)
+        elif tipo == "ebook":
+            novo_produto = EBook(**common_args, **dados)
+        elif tipo == "apostila":
+            novo_produto = Apostila(**common_args, **dados)
+        elif tipo == "cd":
+            novo_produto = CD(**common_args, **dados)
+        else:
+            raise HTTPException(status_code=400, detail=f"Tipo de produto '{tipo}' inválido.")
+
+        loja.estoque[produto_id] = novo_produto
+        
+        return novo_produto.to_dict()
+
+    except TypeError as e:
+        raise HTTPException(status_code=400, detail=f"Argumentos inválidos para atualizar {tipo}: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @app.delete("/produtos/{produto_id}", status_code=204)
 def remover_produto(produto_id: str):
     """
