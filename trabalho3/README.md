@@ -32,36 +32,16 @@ java -cp clients ClientJava http://IP_DO_SERVIDOR:8000/invoke
 
 ---
 
-## Estrutura
+## Endpoints da API
 
-- **Servidor (FastAPI)**
-  - Expõe um endpoint principal `POST /invoke`
-  - Recebe uma requisição de “invocação remota” e responde com `InvokeReply`
+A API segue os padrões REST. Abaixo estão as principais rotas:
 
-- **Serviços**
-  - `CatalogoService`: cadastro, listagem e busca
-  - `TransacaoService`: venda e troca
-  - `Loja`: estoque e operações de busca/lista
-
-- **Modelos**
-  - `Produto` (base)
-  - `Livro`, `EBook`, `Apostila`, `CD`
-  - Serialização com `__type__` para transportar subclasses via JSON
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| **GET** | `/produtos` | Lista todo o catálogo. |
+| **GET** | `/produtos/{id}` | Busca os detalhes de um produto específico. |
+| **POST** | `/produtos` | Cadastra um novo produto no estoque. |
+| **POST** | `/produtos/{id}/venda` | Realiza a venda de um item (muda status para indisponível). |
+| **POST** | `/transacoes/troca` | Realiza a troca entre dois produtos. |
 
 ---
-
-### Endpoint
-- `POST /invoke`
-
-### Formato da requisição
-
-```json
-{
-  "requestId": 1,
-  "objectReference": "CatalogoService",
-  "methodId": "listar",
-  "arguments": {
-    "args": [],
-    "kwargs": {}
-  }
-}
