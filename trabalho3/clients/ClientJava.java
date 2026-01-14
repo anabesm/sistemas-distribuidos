@@ -6,35 +6,55 @@ public class ClientJava {
 
     static final HttpClient client = HttpClient.newHttpClient();
 
-    static String invokeJson(String invokeUrl, String objectRef, String methodId, String argsJson) throws Exception {
-        String body = "{"
-                + "\"requestId\":1,"
-                + "\"objectReference\":\"" + objectRef + "\","
-                + "\"methodId\":\"" + methodId + "\","
-                + "\"arguments\":{\"args\":" + argsJson + ",\"kwargs\":{}}"
-                + "}";
+    static void sendRequest(String url, String method, String jsonBody) {
+        try {
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Content-Type", "application/json");
 
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(invokeUrl))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
-                .build();
+            if ("POST".equalsIgnoreCase(method)) {
+                builder.POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8));
+            } else {
+                builder.GET();
+            }
 
-        HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        return resp.body();
+            HttpRequest req = builder.build();
+            HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+            System.out.println("Status: " + resp.statusCode());
+
+            System.out.println("Response: " + resp.body());
+
+        } catch (Exception e) {
+            System.err.println("Erro na requisição: " + e.getMessage());
+        }
     }
 
-    public static void main(String[] args) throws Exception {
-        String invokeUrl = (args.length >= 1) ? args[0] : "http://127.0.0.1:8000/invoke";
-        System.out.println("Invoke URL: " + invokeUrl);
+    public static void main(String[] args) {
+        String baseUrl = (args.length >= 1) ? args[0] : "http://127.0.0.1:8000";
+        System.out.println("API URL: " + baseUrl);
 
-        System.out.println("\n== LISTAR ==");
-        System.out.println(invokeJson(invokeUrl, "CatalogoService", "listar", "[]"));
+        System.out.println("\n== LISTAR PRODUTOS ==");
+        sendRequest(baseUrl + "/produtos", "GET", null);
 
-        System.out.println("\n== TROCA VALIDA E1 <-> E2 ==");
-        System.out.println(invokeJson(invokeUrl, "TransacaoService", "trocar", "[\"E1\",\"E2\"]"));
+        System.out.println("\n== BUSCAR 'python' ==");
+        sendRequest(baseUrl + "/produtos?termo=python", "GET", null);
 
-        System.out.println("\n== TROCA INVALIDA E1 <-> L1 (ERRO ESPERADO) ==");
-        System.out.println(invokeJson(invokeUrl, "TransacaoService", "trocar", "[\"E1\",\"L1\"]"));
+        System.out.println("\n== TROCA VÁLIDA E1 <-> E2 ==");
+        String jsonTrocaValida = "{"
+                + "\"produto_a_id\": \"E1\","
+                + "\"produto_b_id\": \"E2\""
+                + "}";
+        sendRequest(baseUrl + "/transacoes/troca", "POST", jsonTrocaValida);
+
+        System.out.println("\n== TROCA INVÁLIDA E1 <-> L1 (ERRO ESPERADO) ==");
+        String jsonTrocaInvalida = "{"
+                + "\"produto_a_id\": \"E1\","
+                + "\"produto_b_id\": \"L1\""
+                + "}";
+        sendRequest(baseUrl + "/transacoes/troca", "POST", jsonTrocaInvalida);
+        
+        System.out.println("\n== VENDA L2 ==");
+        sendRequest(baseUrl + "/produtos/L2/venda", "POST", "{}");
     }
 }
